@@ -1,5 +1,4 @@
 const firebase = require('firebase');
-const dotenv = require('dotenv');
 const {admin, db} = require('../db');
 const {settings} = require('../config');
 const {getUserDetail, isEmpty} = require('../middleware');
@@ -29,7 +28,7 @@ exports.register = (req, res) => {
             return res.status(400).json({
                 status: res.statusCode,
                 success: false,
-                handle: 'this handle is already taken'
+                message: 'this handle is already taken'
             })
         }else{
             return firebase
@@ -43,7 +42,7 @@ exports.register = (req, res) => {
             id: data.user.uid,
             email: data.user.email,
             handle,
-            imgUrl: `https://firebasestorage.googleapis.com/v0/b/${process.env.storageBucket}/o/${placeholder}?alt=media`,
+            imgUrl: `https://firebasestorage.googleapis.com/v0/b/${settings.storageBucket}/o/${placeholder}?alt=media`,
             createdAt: new Date().toISOString()
         }
         return data.user.getIdToken();
@@ -247,7 +246,7 @@ exports.uploadImage = (req, res,) => {
         if(!['image/jpg', 'image/jpeg', 'image/png'].includes(mimetype)){
             return res.status(400).json({
                 status: res.statusCode,
-                error: 'wrong file type submitted'
+                message: 'wrong file type submitted'
             })
         }
         
@@ -269,12 +268,19 @@ exports.uploadImage = (req, res,) => {
                 } 
             }
         }).then(data => {
-            const imgUrl = `https://firebasestorage.googleapis.com/v0/b/${process.env.storageBucket}/o/${imgName}?alt=media`;
+            const imgUrl = `https://firebasestorage.googleapis.com/v0/b/${settings.storageBucket}/o/${imgName}?alt=media`;
             return db.doc(`users/${req.user.handle}`).update({imgUrl});
         }).then(() => {
             return res.status(201).json({
                 status: res.status,
                 message: 'image uploaded successfully'
+            })
+        }).catch(err => {
+            console.error(err)
+            return res.status(500).json({
+                status: res.statusCode,
+                success: false,
+                message: 'An error occured while uploading image'
             })
         })
     });
@@ -293,7 +299,7 @@ exports.markNotificationsRead = (req, res) => {
             console.error(err);
             return res.status(500).json({
                 status: res.statusCode,
-                error: 'Error occured trying to mark notifications read'
+                message: 'Error occured trying to mark notifications read'
             });
         });
 }

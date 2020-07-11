@@ -1,14 +1,15 @@
 const functions = require('firebase-functions');
 const express = require('express');
+const cors = require('cors');
 const {db} = require('./db');
 const {loginValidator, signUpValidator, passswordMatch, authorization} = require('./middleware');
 const {getAllBuzz, createBuzz, getBuzz, commentOnBuzz, likeBuzz, deleteBuzz, deleteCommentOnBuzz} = require('./controller/buzz');
 const {register, login, uploadImage, addUserDetail, getAuthenticatedUser, userDetail, markNotificationsRead} = require('./controller/user');
 
-const app = express()
-
+const app = express();
+app.use(cors());
 // buzz routes
-app.get('/buzz', authorization, getAllBuzz);
+app.get('/buzz', getAllBuzz);
 app.get('/buzz/:buzzId',  getBuzz);
 app.delete('/buzz/:buzzId', authorization, deleteBuzz);
 app.post('/buzz', authorization, createBuzz);

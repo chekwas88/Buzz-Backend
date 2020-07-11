@@ -1,5 +1,4 @@
 const {db} = require('../db');
-const {deleteCommentsOnBuzz} = require('../util');
 
 exports.getAllBuzz = (req, res) => {
     db.collection('buzz')
@@ -10,7 +9,7 @@ exports.getAllBuzz = (req, res) => {
                 let buzz = [];
                 docs.forEach(doc => {
                     buzz.push({
-                        id: doc.id,
+                        buzzId: doc.id,
                         likeCount: doc.data().likeCount,
                         commentCount: doc.data().commentCount,
                         imgUrl: doc.data().imgUrl,
@@ -47,7 +46,7 @@ exports.getBuzz = (req, res) => {
                 })
             }
             buzz = doc.data();
-            buzz.id = doc.id
+            buzz.buzzId = doc.id
             return db.collection('comments').where('buzzId', '==', req.params.buzzId).orderBy('createdAt', 'desc').get();
         }).then(data => {
             buzz.comments = [];
@@ -79,7 +78,7 @@ exports.createBuzz = (req, res) => {
     const newBuzz = {
         body,
         userHandle: req.user.handle,
-        userImage: req.user.imgUrl,
+        imgUrl: req.user.imgUrl,
         likeCount: 0,
         commentCount: 0,
         createdAt: new Date().toISOString()
@@ -98,7 +97,7 @@ exports.createBuzz = (req, res) => {
             return res.status(500).json({
                 status: res.statusCode,
                 success: false,
-                error: 'an error occured while creating a buzz'
+                message: 'an error occured while creating a buzz'
             })
         });
 }
@@ -184,14 +183,14 @@ exports.commentOnBuzz = (req, res) => {
     if(!req.body.comment || req.body.comment.trim() === '') return res.status(400).json({
         status: res.statusCode,
         success: false,
-        error: 'comment should not be empty'
+        message: 'comment should not be empty'
     });
 
     const newComment = {
         buzzId: req.params.buzzId,
         body: req.body.comment,
         userHandle: req.user.handle,
-        userImage: req.user.imgUrl,
+        imgUrl: req.user.imgUrl,
         createdAt: new Date().toISOString()
 
     }
@@ -201,7 +200,7 @@ exports.commentOnBuzz = (req, res) => {
             return res.status(404).json({
                 status: res.statusCode,
                 success: false,
-                error: 'buzz not found'
+                message: 'buzz not found'
             })
         }
         return doc.ref.update({commentCount: doc.data().commentCount + 1}) 
@@ -218,7 +217,7 @@ exports.commentOnBuzz = (req, res) => {
         return res.status(500).json({
             status: res.statusCode,
             success: false,
-            error: 'an error occured while trying to create comment'
+            message: 'an error occured while trying to create comment'
         })
     })
 }
@@ -234,7 +233,7 @@ exports.deleteBuzz = (req, res) => {
                 return res.status(403).json({
                     status: res.statusCode,
                     success: false,
-                    error: 'unAuthorized'
+                    message: 'unAuthorized'
                 })
             }
             deletedBuzz = doc.data();
@@ -251,7 +250,7 @@ exports.deleteBuzz = (req, res) => {
             return res.status(404).json({
                 status: res.statusCode,
                 success: false,
-                error: 'buzz not found'
+                message: 'buzz not found'
             })
         }    
     })
@@ -260,7 +259,7 @@ exports.deleteBuzz = (req, res) => {
         return res.status(500).json({
             status: res.statusCode,
             success: false,
-            error: 'an error occured while trying to delete buzz'
+            message: 'an error occured while trying to delete buzz'
         })
     })
 }
